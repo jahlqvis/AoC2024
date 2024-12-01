@@ -1,0 +1,14 @@
+﻿using System.Diagnostics;
+var day = new Day1();
+day.GetInput();
+var start = Stopwatch.StartNew();
+day.PutIntoLists();
+day.SortLists();
+day.GetDifferences();
+var total = day.GetTotalDistance();
+Console.WriteLine($"Day 01A: {total}");
+Console.WriteLine($"Duration: {start.ElapsedMilliseconds} mS");
+start.Restart();
+var similarityScore = day.GetSimilarityScore();
+Console.WriteLine($"Day 01B: {similarityScore}");
+Console.WriteLine($"Duration: {start.ElapsedMilliseconds} mS");
