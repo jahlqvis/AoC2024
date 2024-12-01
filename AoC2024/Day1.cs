@@ -1,18 +1,31 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 public class Day1
 {
     private string filePath = "/Users/johanahlqvist/Source/AoC2024/AoC2024/Day1Input.txt";
     private string input = string.Empty;
-    private List<int> left = new List<int>();
-    private List<int> right = new List<int>();
+    private List<int> left = new List<int>(1000);
+    private List<int> right = new List<int>(1000);
     private List<int> difference = new List<int>();
     private int total;
     public bool GetInput()
     {
         try
         {
-            input = File.ReadAllText(filePath);
+            var stringBuilder = new StringBuilder();
+            using (var reader = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = reader.ReadLine())
+                       != null)
+                {
+                    stringBuilder.AppendLine(line);
+                }
+            }
+
+            string v = stringBuilder.ToString();
+            input = v;
             return true;
         }
         catch (IOException e)
@@ -23,22 +36,36 @@ public class Day1
     }
     public bool PutIntoLists()
     {
-        string[] rows = input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-        
-        foreach (string row in rows)
+        using (var reader = new StringReader(input))
         {
-            var parts = row.Split( new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 && int.TryParse(parts[0], out int number1) && int.TryParse(parts[1], out int number2))
+            string row;
+            while ((row = reader.ReadLine()) != null)
             {
-                left.Add(number1);
-                right.Add(number2);
-            }
-            else
-            {
-                Console.WriteLine("The input string does not contain two valid numbers.");
-                return false;
+                int firstSpace = row.IndexOf(' ');
+                if (firstSpace > 0)
+                {
+                    string firstPart = row.Substring(0, firstSpace);
+                    string secondPart = row.Substring(firstSpace + 1).Trim();
+
+                    if (int.TryParse(firstPart, out int number1) && int.TryParse(secondPart, out int number2))
+                    {
+                        left.Add(number1);
+                        right.Add(number2);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The input string does not contain two valid numbers.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input format.");
+                    return false;
+                }
             }
         }
+
 
         Console.WriteLine($"{left.Count()} numbers added to left list");
         Console.WriteLine($"{right.Count()} numbers added to right list");
@@ -68,21 +95,31 @@ public class Day1
         return total;
     }
     public long GetSimilarityScore()
-    {
-        var dict = new Dictionary<int, int>();
-        
-        foreach(var l in left)
+    { 
+        // Step 1: Create a dictionary to store the counts of elements in the `right` list
+        var rightCounts = new Dictionary<int, int>();
+        foreach (var r in right)
         {
-            var counts = right.Count(n => n == l);
-            dict.Add(l, counts);
+            if (rightCounts.ContainsKey(r))
+            {
+                rightCounts[r]++;
+            }
+            else
+            {
+                rightCounts[r] = 1;
+            }
         }
 
+        // Step 2: Compute the similarity score using precomputed counts
         long totalScore = 0;
-        foreach(var d in dict)
+        foreach (var l in left)
         {
-            totalScore += d.Key * d.Value;
+            if (rightCounts.TryGetValue(l, out int count))
+            {
+                totalScore += l * count;
+            }
         }
 
-        return totalScore;
+        return totalScore;        
     }
 }
